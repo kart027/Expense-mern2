@@ -1,35 +1,11 @@
 
-import { Navigate,redirect } from "react-router-dom";
+import { Navigate,redirect ,useNavigate} from "react-router-dom";
 import Cookie from "js-cookie";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 export default function CheckAuth({ children }) {
-    const token = Cookie.get("token")
-    const [isLoading,setisloading] = useState(false)
-  
+   const auth = useSelector((state)=>state.auth)
 
-useEffect(()=>{
-fetchuser();
-},[])
-
-    const fetchuser = async ()=>{
-      setisloading(true);
-
-      const res = await fetch('http://localhost:4000/user/getuser',{
-        headers:{
-          Authoriazation:`Bearer ${token}`
-        }
-
-      })
-      setisloading(false)
-      if(!res.ok){
-        redirect("/login")
-      }
-    
-    }
-  
-    if(isLoading){
-      return<p>Loading</p>
-    }
-  return  children;
+   return auth.isAuthenticated ? children :<Navigate to="/login" />
 }

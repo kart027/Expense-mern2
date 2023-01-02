@@ -10,12 +10,15 @@ import Typography from "@mui/material/Typography";
 import Cookie from "js-cookie";
 
 import * as React from "react";
+import { useDispatch } from "react-redux";
 
 import { Link as RouterLink,useNavigate } from "react-router-dom";
+import { getuser } from "../store/auth";
 
 
 export default function Login() {
  
+  const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleSubmit = async (event) => {
       event.preventDefault();
@@ -37,7 +40,8 @@ export default function Login() {
   
       if (res.ok) {
         Cookie.set("token", token);
-       
+
+       dispatch(getuser(user))
         navigate("/");
       }
     };

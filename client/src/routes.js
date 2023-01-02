@@ -21,7 +21,7 @@ export default  createBrowserRouter([
   
       },
       {
-        path:"/Login",
+        path:"/login",
         element: (
             <Guest>
               <Login />
