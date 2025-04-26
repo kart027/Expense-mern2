@@ -8,38 +8,32 @@ import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { Link as RouterLink,useNavigate } from "react-router-dom";
-
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 export default function Register() {
+  const navigate = useNavigate();
 
-    
-    const navigate = useNavigate();
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        const form = {
-          firstName: data.get("firstName"),
-          lastName: data.get("lastName"),
-          email: data.get("email"),
-          password: data.get("password"),
-        };
-        const res = await fetch(`http://localhost:4000/user/register`, {
-            method: "POST",
-            body: JSON.stringify(form),
-            headers: {
-              "content-type": "application/json",
-            },
-          });
-          if (res.ok) {
-            navigate("/");
-          }
-        };
-      
-      
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const form = {
+      firstName: data.get("firstName"),
+      lastName: data.get("lastName"),
+      email: data.get("email"),
+      password: data.get("password"),
+    };
 
-   
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
+      method: "POST",
+      body: JSON.stringify(form),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+    if (res.ok) {
+      navigate("/");
+    }
+  };
 
   return (
     <Container>
@@ -57,7 +51,7 @@ export default function Register() {
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <Box component="form" noValidate  onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField

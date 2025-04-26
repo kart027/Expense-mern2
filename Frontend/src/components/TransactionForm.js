@@ -1,4 +1,4 @@
-
+import Autocomplete from "@mui/material/Autocomplete";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -8,20 +8,25 @@ import Typography from "@mui/material/Typography";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { useState,useEffect } from "react";
-import { Autocomplete } from "@mui/material";
+import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const InitialForm = {
-  amount: "",
+  amount: 0,
   description: "",
   date: new Date(),
-  
+  category_id: "",
+  type: "expenses",
 };
 
-export default function TransactionForm({ fetchTransctions,editTransaction}) {
-  
+export default function TransactionForm({ fetchTransctions, editTransaction }) {
+  const { categories } = useSelector((state) => state.auth.user);
+  console.log("categories here", categories)
+  const token = Cookies.get("token");
   const [form, setForm] = useState(InitialForm);
-  
+  const types = ["expense", "income", "transfer"];
+
   useEffect(() => {
     if (editTransaction.amount !== undefined) {
       setForm(editTransaction);
@@ -38,7 +43,7 @@ export default function TransactionForm({ fetchTransctions,editTransaction}) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    editTransaction.amount === undefined ? create() : update(); 
+    editTransaction.amount === undefined ? create() : update();
   }
 
   function reload(res) {
@@ -47,59 +52,58 @@ export default function TransactionForm({ fetchTransctions,editTransaction}) {
       fetchTransctions();
     }
   }
-   
 
-      async function update() {
-        const res = await fetch(
-          `http://localhost:4000/transcation/${editTransaction._id}`,
-          {
-            method: "PATCH",
-            body: JSON.stringify(form),
-            headers: {
-              "content-type": "application/json",
-             
-            },
-          }
-        );
-        reload(res);
-      }
-    
-    
-  
-  const create = async()=>{
-    try {
-      const res = await fetch('http://localhost:4000/transcation',{
-        method:"POST",
-        headers:{
-          'Content-type': 'application/json'
-  
+  async function create() {
+    console.log("form", form)
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/transaction`, {
+      method: "POST",
+      body: JSON.stringify(form),
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    reload(res);
+  }
+
+  async function update() {
+    const res = await fetch(
+      `${process.env.REACT_APP_API_URL}/transaction/${editTransaction._id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(form),
+        headers: {
+          "content-type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body:JSON.stringify(form)
-  
-      })
-      reload(res);
-          
-        } catch (error) {
-          console.log(error)
-        }
-         
-     
-    }
+      }
+    );
+    reload(res);
+  }
 
-  
- 
+  function getCategoryNameById() {
+    return (
+      categories.find((category) => category._id === form.category_id) ?? ""
+    );
+  }
 
- 
-
- 
-
- 
   return (
     <Card sx={{ minWidth: 275, marginTop: 10 }}>
       <CardContent>
         <Typography variant="h6">Add New Transaction</Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex" }}>
-        
+          <Autocomplete
+            value={form.type}
+            onChange={(event, newValue) => {
+              setForm({ ...form, type: newValue });
+            }}
+            id="type"
+            options={types}
+            sx={{ width: 200, marginRight: 5 }}
+            renderInput={(params) => (
+              <TextField {...params} size="small" label="Type" />
+            )}
+          />
           <TextField
             sx={{ marginRight: 5 }}
             id="outlined-basic"
@@ -133,7 +137,20 @@ export default function TransactionForm({ fetchTransctions,editTransaction}) {
             />
           </LocalizationProvider>
 
-      
+          <Autocomplete
+            value={getCategoryNameById()}
+            onChange={(event, newValue) => {
+              console.log("selecteds",newValue)
+              setForm({ ...form, category_id: newValue._id });
+            }}
+            id="controllable-states-demo"
+            options={categories}
+            sx={{ width: 200, marginRight: 5 }}
+            renderInput={(params) => (
+              <TextField {...params} size="small" label="Category" />
+            )}
+          />
+
           {editTransaction.amount !== undefined && (
             <Button type="submit" variant="secondary">
               Update
@@ -148,5 +165,5 @@ export default function TransactionForm({ fetchTransctions,editTransaction}) {
         </Box>
       </CardContent>
     </Card>
-  ); 
+  );
 }

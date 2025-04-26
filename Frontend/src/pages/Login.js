@@ -8,43 +8,38 @@ import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Cookie from "js-cookie";
-
 import * as React from "react";
 import { useDispatch } from "react-redux";
-
-import { Link as RouterLink,useNavigate } from "react-router-dom";
-import { getuser } from "../store/auth";
-
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { setUser } from "../store/auth.js";
 
 export default function Login() {
- 
   const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const handleSubmit = async (event) => {
-      event.preventDefault();
-      const data = new FormData(event.currentTarget);
-      const form = {
-        email: data.get("email"),
-        password: data.get("password"),
-      };
-  
-      const res = await fetch(`http://localhost:4000/user/login`, {
-        method: "POST",
-        body: JSON.stringify(form),
-        headers: {
-          "content-type": "application/json",
-        },
-      });
-  
-      const { token, user } = await res.json();
-  
-      if (res.ok) {
-        Cookie.set("token", token);
-
-       dispatch(getuser(user))
-        navigate("/");
-      }
+  const navigate = useNavigate();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const form = {
+      email: data.get("email"),
+      password: data.get("password"),
     };
+
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      method: "POST",
+      body: JSON.stringify(form),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+
+    const { token, user } = await res.json();
+
+    if (res.ok) {
+      Cookie.set("token", token);
+      dispatch(setUser(user));
+      navigate("/");
+    }
+  };
 
   return (
     <Container>
@@ -62,7 +57,7 @@ export default function Login() {
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
-        <Box component="form"  onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
             required
